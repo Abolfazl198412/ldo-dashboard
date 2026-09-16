@@ -1,0 +1,35 @@
+name: LDO Deep Analysis (every 4 hours)
+
+on:
+  schedule:
+    - cron: "0 */4 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  run-analysis:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests matplotlib
+
+      - name: Run LDO analyzer
+        run: python ldo_analyzer.py
+
+      - name: Commit and push updated dashboard
+        run: |
+          git config user.name "ldo-bot"
+          git config user.email "ldo-bot@users.noreply.github.com"
+          git add docs/
+          git diff --quiet --cached || git commit -m "Update LDO dashboard"
+          git push
